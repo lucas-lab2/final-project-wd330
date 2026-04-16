@@ -33,7 +33,8 @@ async function fetchDestination(query) {
             return renderResults(data, 'country');
         }
 
-        const cityRes = await fetch(`https://geocoding-api.open-meteo.com/v1/search?name=${query}&count=5`);
+        // Changed count=5 to count=1 to only fetch the top result
+        const cityRes = await fetch(`https://geocoding-api.open-meteo.com/v1/search?name=${query}&count=1`);
         if (cityRes.ok) {
             const cityData = await cityRes.json();
             if (cityData.results && cityData.results.length > 0) {
