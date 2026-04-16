@@ -1,8 +1,5 @@
-// --- API Keys ---
 const UNSPLASH_ACCESS_KEY = 'cHoGjaTOY5aZzvdpeoDEm-UPen6xPAEwAWwi_G8q59A';
-const RAPIDAPI_KEY = 'YOUR_RAPIDAPI_KEY'; // Replace with your RapidAPI key for GeoDB Cities
 
-// --- Elements ---
 const searchInput = document.getElementById('searchInput');
 const searchBtn = document.getElementById('searchBtn');
 const resultsGrid = document.getElementById('resultsGrid');
@@ -17,42 +14,30 @@ const detailsModal = document.getElementById('detailsModal');
 const modalBody = document.getElementById('modalBody');
 const closeBtn = document.querySelector('.close-btn');
 
-// --- State ---
 let favorites = JSON.parse(localStorage.getItem('travelFavorites')) || [];
 let itinerary = JSON.parse(localStorage.getItem('travelItinerary')) || [];
 
-// --- Init ---
 function init() {
     renderFavorites();
     renderItinerary();
 }
 
-// --- API Services ---
 async function fetchDestination(query) {
     errorMsg.textContent = '';
     resultsGrid.innerHTML = '<p>Loading...</p>';
     
     try {
-        // Try fetching as a country first
         const countryRes = await fetch(`https://restcountries.com/v3.1/name/${query}`);
         if (countryRes.ok) {
             const data = await countryRes.json();
             return renderResults(data, 'country');
         }
 
-        // If country fails, try fetching as a city via GeoDB
-        const cityRes = await fetch(`https://wft-geo-db.p.rapidapi.com/v1/geo/cities?namePrefix=${query}&limit=5`, {
-            method: 'GET',
-            headers: {
-                'X-RapidAPI-Key': RAPIDAPI_KEY,
-                'X-RapidAPI-Host': 'wft-geo-db.p.rapidapi.com'
-            }
-        });
-        
+        const cityRes = await fetch(`https://geocoding-api.open-meteo.com/v1/search?name=${query}&count=5`);
         if (cityRes.ok) {
             const cityData = await cityRes.json();
-            if (cityData.data.length > 0) {
-                return renderResults(cityData.data, 'city');
+            if (cityData.results && cityData.results.length > 0) {
+                return renderResults(cityData.results, 'city');
             }
         }
 
@@ -89,15 +74,27 @@ async function fetchImage(query) {
     }
 }
 
-// --- Rendering ---
+async function fetchWikipediaSummary(query) {
+    try {
+        const response = await fetch(`https://en.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(query)}`);
+        if (response.ok) {
+            const data = await response.json();
+            return data.extract || "No specific cultural or tourist summary available at this time.";
+        }
+    } catch (error) {
+        console.error('Wikipedia fetch error:', error);
+    }
+    return "No specific cultural or tourist summary available at this time.";
+}
+
 async function renderResults(items, type) {
     resultsGrid.innerHTML = '';
     
     for (const item of items) {
-        const name = type === 'country' ? item.name.common : item.city;
+        const name = type === 'country' ? item.name.common : item.name;
         const subtitle = type === 'country' 
             ? `Capital: ${item.capital ? item.capital[0] : 'N/A'} | Region: ${item.region}`
-            : `Country: ${item.country} | Region: ${item.region}`;
+            : `Country: ${item.country} | Region: ${item.admin1 || 'N/A'}`;
         
         const fallbackImg = `https://placehold.co/600x400/1D3557/F8F9FA?text=${encodeURIComponent(name)}`;
         const unsplashImg = await fetchImage(name);
@@ -124,13 +121,19 @@ async function renderResults(items, type) {
     }
 }
 
-function showDetails(item, type) {
+async function showDetails(item, type) {
+    const name = type === 'country' ? item.name.common : item.name;
+    modalBody.innerHTML = `<h2>Loading detailed information...</h2>`;
+    detailsModal.style.display = 'block';
+
+    const extraInfo = await fetchWikipediaSummary(name);
+
     if (type === 'country') {
         const currencies = item.currencies ? Object.values(item.currencies).map(c => c.name).join(', ') : 'N/A';
         const languages = item.languages ? Object.values(item.languages).join(', ') : 'N/A';
         
         modalBody.innerHTML = `
-            <h2 style="margin-bottom: 1rem;">${item.name.common} <img src="${item.flags.svg}" alt="flag" style="width:40px; vertical-align:middle; border-radius: 4px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);"></h2>
+            <h2 style="margin-bottom: 1rem;">${name} <img src="${item.flags.svg}" alt="flag" style="width:40px; vertical-align:middle; border-radius: 4px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);"></h2>
             <div style="line-height: 2;">
                 <p><strong>Capital:</strong> ${item.capital ? item.capital[0] : 'N/A'}</p>
                 <p><strong>Region:</strong> ${item.region}</p>
@@ -138,22 +141,29 @@ function showDetails(item, type) {
                 <p><strong>Languages:</strong> ${languages}</p>
                 <p><strong>Currency:</strong> ${currencies}</p>
             </div>
+            <div class="extra-info-box">
+                <strong>About ${name} (Culture & Tourism):</strong><br>
+                <p style="margin-top: 0.5rem; line-height: 1.6;">${extraInfo}</p>
+            </div>
         `;
     } else {
         modalBody.innerHTML = `
-            <h2 style="margin-bottom: 1rem;">${item.city}</h2>
+            <h2 style="margin-bottom: 1rem;">${name}</h2>
             <div style="line-height: 2;">
                 <p><strong>Country:</strong> ${item.country}</p>
-                <p><strong>Region:</strong> ${item.region}</p>
+                <p><strong>State/Region:</strong> ${item.admin1 || 'N/A'}</p>
                 <p><strong>Population:</strong> ${item.population ? item.population.toLocaleString() : 'N/A'}</p>
-                <p><strong>Elevation:</strong> ${item.elevationMeters ? item.elevationMeters + 'm' : 'N/A'}</p>
+                <p><strong>Elevation:</strong> ${item.elevation ? item.elevation + 'm' : 'N/A'}</p>
+                <p><strong>Coordinates:</strong> ${item.latitude}, ${item.longitude}</p>
+            </div>
+            <div class="extra-info-box">
+                <strong>About ${name} (Culture & Tourism):</strong><br>
+                <p style="margin-top: 0.5rem; line-height: 1.6;">${extraInfo}</p>
             </div>
         `;
     }
-    detailsModal.style.display = 'block';
 }
 
-// --- Favorites Module ---
 function addFavorite(name) {
     if (!favorites.includes(name)) {
         favorites.push(name);
@@ -182,7 +192,6 @@ function renderFavorites() {
     });
 }
 
-// --- Itinerary Module ---
 itineraryForm.addEventListener('submit', (e) => {
     e.preventDefault();
     const dest = itineraryDest.value.trim();
@@ -218,13 +227,11 @@ function renderItinerary() {
     });
 }
 
-// --- Local Storage Module ---
 function saveData() {
     localStorage.setItem('travelFavorites', JSON.stringify(favorites));
     localStorage.setItem('travelItinerary', JSON.stringify(itinerary));
 }
 
-// --- Event Listeners ---
 searchBtn.addEventListener('click', () => {
     if (searchInput.value.trim()) fetchDestination(searchInput.value.trim());
 });
@@ -249,5 +256,4 @@ window.addEventListener('click', (e) => {
     }
 });
 
-// Start app
 init();

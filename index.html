@@ -1,92 +1,73 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Smart Travel Planner</title>
-    <link
-      href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&family=Open+Sans:wght@400;600&display=swap"
-      rel="stylesheet"
-    />
-    <link rel="stylesheet" href="styles/style.css" />
-  </head>
-  <body>
-    <header>
-      <h1>Smart Travel Planner</h1>
-      <nav>
-        <a href="#">Home</a>
-        <a href="#">Favorites</a>
-        <a href="#">Itinerary</a>
-      </nav>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@500;600;700&family=Open+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles/style.css">
+</head>
+<body>
+    <header id="home-section">
+        <h1>Smart Travel Planner</h1>
+        <nav>
+            <a href="#home-section">Home</a>
+            <a href="#favorites-section">Favorites</a>
+            <a href="#itinerary-section">Itinerary</a>
+        </nav>
     </header>
 
     <div class="hero">
-      <h2>Find Your Perfect Destination</h2>
-      <p>
-        Search for any country or city and start planning your next adventure
-      </p>
-      <div class="search-container">
-        <input
-          type="text"
-          id="searchInput"
-          placeholder="Search country or city..."
-        />
-        <button id="searchBtn">Search</button>
-      </div>
-      <p id="errorMsg" class="error-msg"></p>
+        <h2>Find Your Perfect Destination</h2>
+        <p>Search for any country or city and start planning your next adventure</p>
+        <div class="search-container">
+            <input type="text" id="searchInput" placeholder="Search country or city...">
+            <button id="searchBtn">Search</button>
+        </div>
+        <p id="errorMsg" class="error-msg"></p>
     </div>
 
     <main class="layout-container">
-      <aside class="sidebar">
-        <div class="filter-group">
-          <h3>Quick Picks</h3>
-          <button class="region-btn" data-region="Europe">Europe</button>
-          <button class="region-btn" data-region="Americas">Americas</button>
-          <button class="region-btn" data-region="Asia">Asia</button>
-          <button class="region-btn" data-region="Africa">Africa</button>
-        </div>
-      </aside>
+        <aside class="sidebar">
+            <div class="filter-group">
+                <h3>Quick Picks</h3>
+                <button class="region-btn" data-region="Europe">Europe</button>
+                <button class="region-btn" data-region="Americas">Americas</button>
+                <button class="region-btn" data-region="Asia">Asia</button>
+                <button class="region-btn" data-region="Africa">Africa</button>
+            </div>
+        </aside>
 
-      <section class="results-section">
-        <h3 class="section-title">Search Results</h3>
-        <div id="resultsGrid" class="grid"></div>
-      </section>
+        <section class="results-section">
+            <h3 class="section-title">Search Results</h3>
+            <div id="resultsGrid" class="grid"></div>
+        </section>
 
-      <aside class="right-panel">
-        <div class="panel-section">
-          <h3>Favorites</h3>
-          <div id="favoritesList" class="list-container"></div>
-        </div>
+        <aside class="right-panel">
+            <div class="panel-section" id="favorites-section">
+                <h3>Favorites</h3>
+                <div id="favoritesList" class="list-container"></div>
+            </div>
 
-        <div class="panel-section">
-          <h3>Itinerary</h3>
-          <form id="itineraryForm">
-            <input
-              type="text"
-              id="itineraryDest"
-              placeholder="Destination name..."
-              required
-            />
-            <input
-              type="text"
-              id="itineraryNotes"
-              placeholder="Notes..."
-              required
-            />
-            <button type="submit" class="btn-dark">+ Add to Itinerary</button>
-          </form>
-          <div id="itineraryList" class="list-container"></div>
-        </div>
-      </aside>
+            <div class="panel-section" id="itinerary-section">
+                <h3>Itinerary</h3>
+                <form id="itineraryForm">
+                    <input type="text" id="itineraryDest" placeholder="Destination name..." required>
+                    <input type="text" id="itineraryNotes" placeholder="Notes..." required>
+                    <button type="submit" class="btn-dark">+ Add to Itinerary</button>
+                </form>
+                <div id="itineraryList" class="list-container"></div>
+            </div>
+        </aside>
     </main>
 
     <div id="detailsModal" class="modal">
-      <div class="modal-content">
-        <span class="close-btn">&times;</span>
-        <div id="modalBody"></div>
-      </div>
+        <div class="modal-content">
+            <span class="close-btn">&times;</span>
+            <div id="modalBody"></div>
+        </div>
     </div>
 
     <script src="scripts/script.js"></script>
-  </body>
+</body>
 </html>
